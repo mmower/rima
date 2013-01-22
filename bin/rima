@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+#
+
+RIMA_PATH = File.expand_path( File.join( File.dirname( __FILE__ ), '..' ) )
+
+$: << File.join( RIMA_PATH, 'lib' )
+require 'rima'
+
+analyzer = if File.exist?( File.expand_path( "~/.rima" ) )
+  RIMA::Analyzer.restore( "~/.rima" )
+else
+  RIMA::Analyzer.new(
+    File.join( RIMA_PATH, 'rid', 'categories' ),
+    File.join( RIMA_PATH, 'rid', 'exceptions' )
+    ).store( "~/.rima" )
+end
+
+results = analyzer.analyze( STDIN.read )
+
+puts "Total words   = #{results[:word_total]}"
+puts "Counted words = #{results[:word_count]}"
+puts ""
+puts "Primary:   %0.3f" % results[:classes][:primary]
+puts "Secondary: %0.3f" % results[:classes][:secondary]
+puts "Emotions:  %0.3f" % results[:classes][:emotions]
+puts ""
+puts results[:sorted_scores].map { |r| "#{r[0].path.ljust(48)}=\t#{r[1]}" }.join( "\n" )
+
